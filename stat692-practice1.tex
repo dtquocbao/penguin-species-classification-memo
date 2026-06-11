@@ -1,0 +1,204 @@
+% Options for packages loaded elsewhere
+\PassOptionsToPackage{unicode}{hyperref}
+\PassOptionsToPackage{hyphens}{url}
+\documentclass[
+]{article}
+\usepackage{xcolor}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb}
+\setcounter{secnumdepth}{5}
+\usepackage{iftex}
+\ifPDFTeX
+  \usepackage[T1]{fontenc}
+  \usepackage[utf8]{inputenc}
+  \usepackage{textcomp} % provide euro and other symbols
+\else % if luatex or xetex
+  \usepackage{unicode-math} % this also loads fontspec
+  \defaultfontfeatures{Scale=MatchLowercase}
+  \defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+\fi
+\usepackage{lmodern}
+\ifPDFTeX\else
+  % xetex/luatex font selection
+\fi
+% Use upquote if available, for straight quotes in verbatim environments
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\IfFileExists{microtype.sty}{% use microtype if available
+  \usepackage[]{microtype}
+  \UseMicrotypeSet[protrusion]{basicmath} % disable protrusion for tt fonts
+}{}
+\makeatletter
+\@ifundefined{KOMAClassName}{% if non-KOMA class
+  \IfFileExists{parskip.sty}{%
+    \usepackage{parskip}
+  }{% else
+    \setlength{\parindent}{0pt}
+    \setlength{\parskip}{6pt plus 2pt minus 1pt}}
+}{% if KOMA class
+  \KOMAoptions{parskip=half}}
+\makeatother
+\usepackage{graphicx}
+\makeatletter
+\newsavebox\pandoc@box
+\newcommand*\pandocbounded[1]{% scales image to fit in text height/width
+  \sbox\pandoc@box{#1}%
+  \Gscale@div\@tempa{\textheight}{\dimexpr\ht\pandoc@box+\dp\pandoc@box\relax}%
+  \Gscale@div\@tempb{\linewidth}{\wd\pandoc@box}%
+  \ifdim\@tempb\p@<\@tempa\p@\let\@tempa\@tempb\fi% select the smaller of both
+  \ifdim\@tempa\p@<\p@\scalebox{\@tempa}{\usebox\pandoc@box}%
+  \else\usebox{\pandoc@box}%
+  \fi%
+}
+% Set default figure placement to htbp
+\def\fps@figure{htbp}
+\makeatother
+\setlength{\emergencystretch}{3em} % prevent overfull lines
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+\usepackage{bookmark}
+\IfFileExists{xurl.sty}{\usepackage{xurl}}{} % add URL line breaks if available
+\urlstyle{same}
+\hypersetup{
+  pdftitle={Penguin Species Classification Memo},
+  pdfauthor={Tran Quoc Bao Dang},
+  hidelinks,
+  pdfcreator={LaTeX via pandoc}}
+
+\title{Penguin Species Classification Memo}
+\author{Tran Quoc Bao Dang}
+\date{2026-06-11}
+
+\begin{document}
+\maketitle
+
+{
+\setcounter{tocdepth}{2}
+\tableofcontents
+}
+\newpage
+
+\section{Executive Summary}\label{executive-summary}
+
+Dr.~Sharma provided measurements from an unidentified penguin specimen
+with a bill length of 45 mm and a flipper length of 220 mm. Using the
+Palmer Penguins dataset, I compared these measurements to known Adelie,
+Chinstrap, and Gentoo penguins. Both visual analysis and a multinomial
+classification model suggest that the specimen is most likely a Gentoo
+penguin. The specimen's flipper length is particularly characteristic of
+Gentoo penguins. While the classification appears strong, confidence
+could be improved with additional measurements such as body mass or bill
+depth.
+
+\section{Background and Objective}\label{background-and-objective}
+
+The objective of this project is to identify the most likely species of
+an unlabeled penguin specimen discovered during a previous expedition.
+The available measurements are bill length (45 mm) and flipper length
+(220 mm). Dr.~Sharma would like to determine:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\tightlist
+\item
+  The most likely species.
+\item
+  The confidence in that classification.
+\item
+  How the specimen compares visually to known penguin species.
+\end{enumerate}
+
+\section{Data Description}\label{data-description}
+
+The Palmer Penguins dataset contains measurements from three penguin
+species: Adelie, Chinstrap, and Gentoo. For this analysis, bill length
+and flipper length were used because these measurements were available
+for the unknown specimen. Records with missing values were removed prior
+to analysis.
+
+\section{Exploratory Analysis}\label{exploratory-analysis}
+
+Figure 1 shows the relationship between bill length and flipper length
+for the three species. Gentoo penguins generally have longer flippers
+than Adelie and Chinstrap penguins. The unknown specimen falls near the
+Gentoo cluster due to its unusually long flipper length of 220 mm.
+
+\begin{verbatim}
+## # A tibble: 3 x 6
+##   species       n mean_bill mean_flipper sd_bill sd_flipper
+##   <fct>     <int>     <dbl>        <dbl>   <dbl>      <dbl>
+## 1 Adelie      151      38.8         190.    2.66       6.54
+## 2 Chinstrap    68      48.8         196.    3.34       7.13
+## 3 Gentoo      123      47.5         217.    3.08       6.48
+\end{verbatim}
+
+\pandocbounded{\includegraphics[keepaspectratio]{stat692-practice1_files/stat692-practice1_files/figure-latex/explore_data-1.pdf}}
+
+\section{Classification Approach}\label{classification-approach}
+
+To estimate species membership, a multinomial logistic regression model
+was fitted using bill length and flipper length as predictors. The model
+calculates the probability that a specimen belongs to each species and
+assigns the species with the highest probability.
+
+\begin{verbatim}
+## # weights:  12 (6 variable)
+## initial  value 375.725403 
+## iter  10 value 50.510292
+## iter  20 value 43.317383
+## iter  30 value 39.708794
+## iter  40 value 39.082004
+## iter  50 value 39.064861
+## final  value 39.064292 
+## converged
+\end{verbatim}
+
+\begin{verbatim}
+## [1] Gentoo
+## Levels: Adelie Chinstrap Gentoo
+\end{verbatim}
+
+\begin{verbatim}
+##       Adelie    Chinstrap       Gentoo 
+## 3.415307e-04 1.255216e-05 9.996459e-01
+\end{verbatim}
+
+\section{Results}\label{results}
+
+The model assigned an 85\% probability that the specimen is a Gentoo
+penguin, making Gentoo the most likely classification.
+
+\begin{verbatim}
+##       Adelie    Chinstrap       Gentoo 
+## 3.415307e-04 1.255216e-05 9.996459e-01
+\end{verbatim}
+
+\section{Interpretation for
+Dr.~Sharma}\label{interpretation-for-dr.-sharma}
+
+Based on bill length and flipper length, the unknown specimen is most
+likely a Gentoo penguin. The strongest evidence is its long flipper
+length of 220 mm, which visually places it closest to the Gentoo
+cluster. The model's predicted probability also supports this
+classification.
+
+\section{Limitations}\label{limitations}
+
+This classification is based only on two measurements: bill length and
+flipper length. Including body mass, bill depth, sex, island, or other
+biological information could improve confidence. Because the specimen is
+preserved and from a prior expedition, measurement error or preservation
+effects may also affect the result.
+
+\section{Recommendation}\label{recommendation}
+
+Based on both visual inspection and statistical classification, the
+specimen should be provisionally classified as a Gentoo penguin. The
+evidence supporting this classification is strong because the specimen's
+flipper length is highly characteristic of Gentoo penguins. If
+additional measurements such as body mass or bill depth become
+available, the classification should be re-evaluated to further increase
+confidence.
+
+\section{Appendix: Code}\label{appendix-code}
+
+\end{document}
