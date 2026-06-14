@@ -36,6 +36,7 @@ library(palmerpenguins)
 library(tidyverse)
 library(nnet)
 library(knitr)
+library(kableExtra)
 
 data("penguins")
 ```
@@ -54,7 +55,7 @@ The objective of this project is to identify the most likely species of an unlab
 
 # Data Description
 
-The Palmer Penguins dataset contains measurements from three penguin species: Adelie, Chinstrap, and Gentoo. For this analysis, bill length and flipper length were used because these measurements were available for the unknown specimen. Records with missing values were removed prior to analysis.
+The Palmer Penguins dataset contains measurements from three penguin species: Adelie, Chinstrap, and Gentoo. For this analysis, bill length and flipper length were used because these measurements were available for the unidentified specimen. Records with missing values were removed prior to analysis.
 
 ```{r clean_data, echo=FALSE}
 penguins_clean <- penguins %>%
@@ -75,9 +76,9 @@ After removing records with missing values, the dataset contains `r total_n` pen
 
 # Exploratory Analysis
 
-Figure 1 shows the relationship between bill length and flipper length for the three species. Gentoo penguins generally have longer flippers than Adelie and Chinstrap penguins. The unknown specimen falls near the Gentoo cluster due to its unusually long flipper length of 220 mm.
+Figure 1 shows the relationship between bill length and flipper length for the three species. Gentoo penguins generally have longer flippers than Adelie and Chinstrap penguins. The unidentified specimen falls near the Gentoo cluster due to its unusually long flipper length of 220 mm.
 
-```{r explore_data, echo=FALSE, fig.cap="Bill length vs. flipper length for known penguin species. The red star marks the unknown specimen (bill length = 45mm, flipper length = 220mm)."}
+```{r explore_data, echo=FALSE, fig.cap="Bill length vs. flipper length for known penguin species. The red star marks the unidentified specimen (bill length = 45mm, flipper length = 220mm)."}
 
 species_summary <- penguins_clean %>%
   group_by(species) %>%
@@ -87,7 +88,7 @@ species_summary <- penguins_clean %>%
   )
 
 unknown_row <- data.frame(
-  species = "Unknown Specimen",
+  species = "Unidentified Specimen",
   `Avg Bill Length` = 45,
   `Avg Flipper Length` = 220,
   check.names = FALSE
@@ -97,8 +98,8 @@ comparison_table <- bind_rows(species_summary, unknown_row)
 
 kable(
   comparison_table,
-  caption = "Comparison of the Unknown Specimen with Typical Measurements by Species (mm)"
-)
+  col.names = c("Species", "Bill Length (mm)", "Flipper Length (mm)")) %>%
+  footnote(general = "Species rows show species means; unidentified Specimen row shows raw measurements.")
 
 new_specimen <- tibble(
   bill_length_mm = 45,
@@ -111,7 +112,6 @@ ggplot(penguins_clean, aes(x = bill_length_mm, y = flipper_length_mm, color = sp
              aes(x = bill_length_mm, y = flipper_length_mm),
              color = "red", size = 5, shape = 8) +
   labs(
-    title = "Unknown Penguin Specimen Compared with Known Species",
     x = "Bill Length (mm)",
     y = "Flipper Length (mm)",
     color = "Species"
@@ -122,7 +122,7 @@ ggplot(penguins_clean, aes(x = bill_length_mm, y = flipper_length_mm, color = sp
 
 # Analytical Approach
 
-The unknown specimen was compared to known penguin measurements using a statistical classification procedure designed to estimate the most likely species.
+The unidentified specimen was compared to known penguin measurements using a statistical To estimate the most likely species, we used a statistical model that learns the typical bill and flipper length patterns for each species from the existing dataset, then calculates the probability that the unidentified specimen belongs to each group. This approach was chosen because it provides a concrete confidence score rather than simply pointing to the nearest average.
 
 
 ```{r sim_classification_model, echo=FALSE, include=FALSE}
@@ -158,7 +158,7 @@ kable(
 
 The model assigned a `r round(probabilities["Gentoo"]*100, 2)`% probability to Gentoo, compared to `r round(probabilities["Chinstrap"]*100, 2)`% for Chinstrap and `r round(probabilities["Adelie"]*100, 2)`% for Adelie, making Gentoo the clear frontrunner.
 
-The unknown specimen has a bill length of 45 mm and a flipper length of 220 mm. While its bill length falls between the Chinstrap and Gentoo averages, its flipper length is most consistent with Gentoo penguins, providing strong evidence for that classification.
+The unidentified specimen has a bill length of 45 mm and a flipper length of 220 mm. While its bill length falls between the Chinstrap and Gentoo averages, its flipper length is most consistent with Gentoo penguins, providing strong evidence for that classification.
 
 
 # Limitations
@@ -167,4 +167,4 @@ This classification is based only on two measurements: bill length and flipper l
 
 # Recommendation
 
-Based on both visual inspection and statistical classification, the specimen should be provisionally classified as a Gentoo penguin. The evidence supporting this classification is strong because the specimen's flipper length is highly characteristic of Gentoo penguins. If additional measurements such as body mass or bill depth become available, the classification should be re-evaluated to further increase confidence.
+Based on both visual inspection and statistical classification, the specimen should be classified as a Gentoo penguin based on the available evidence. The evidence supporting this classification is strong because the specimen's flipper length is highly characteristic of Gentoo penguins. If additional measurements such as body mass or bill depth become available, the classification should be re-evaluated to further increase confidence.
