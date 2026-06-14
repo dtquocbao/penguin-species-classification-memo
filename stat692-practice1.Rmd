@@ -35,13 +35,14 @@ knitr::opts_chunk$set(
 library(palmerpenguins)
 library(tidyverse)
 library(nnet)
+library(knitr)
 
 data("penguins")
 ```
 
 # Executive Summary
 
-Dr. Sharma provided measurements from an unidentified penguin specimen with a bill length of 45 mm and a flipper length of 220 mm. Using the Palmer Penguins dataset, I compared these measurements to known Adelie, Chinstrap, and Gentoo penguins. Both visual analysis and a multinomial classification model suggest that the specimen is most likely a Gentoo penguin. The specimen's flipper length is particularly characteristic of Gentoo penguins. While the classification appears strong, confidence could be improved with additional measurements such as body mass or bill depth.
+Dr. Sharma provided measurements from an unidentified penguin specimen with a bill length of 45 mm and a flipper length of 220 mm. Using the Palmer Penguins dataset, I compared these measurements to known Adelie, Chinstrap, and Gentoo penguins. Both visual comparison and statistical analysis suggest that the specimen is most likely a Gentoo penguin. The specimen's flipper length is particularly characteristic of Gentoo penguins. While the classification appears strong, confidence could be improved with additional measurements such as body mass or bill depth.
 
 # Background and Objective
 
@@ -65,15 +66,27 @@ penguins_clean <- penguins %>%
 ```
 
 ```{r explore_data, echo=FALSE}
-penguins_clean %>%
+
+species_summary <- penguins_clean %>%
   group_by(species) %>%
   summarise(
-    n = n(),
-    mean_bill = mean(bill_length_mm),
-    mean_flipper = mean(flipper_length_mm),
-    sd_bill = sd(bill_length_mm),
-    sd_flipper = sd(flipper_length_mm)
+    `Avg Bill Length` = round(mean(bill_length_mm),1),
+    `Avg Flipper Length` = round(mean(flipper_length_mm),1)
   )
+
+unknown_row <- data.frame(
+  species = "Unknown Specimen",
+  `Avg Bill Length` = 45,
+  `Avg Flipper Length` = 220,
+  check.names = FALSE
+)
+
+comparison_table <- bind_rows(species_summary, unknown_row)
+
+kable(
+  comparison_table,
+  caption = "Comparison of the Unknown Specimen with Typical Measurements by Species (mm)"
+)
 
 new_specimen <- tibble(
   bill_length_mm = 45,
@@ -84,7 +97,7 @@ ggplot(penguins_clean, aes(x = bill_length_mm, y = flipper_length_mm, color = sp
   geom_point(alpha = 0.7) +
   geom_point(data = new_specimen,
              aes(x = bill_length_mm, y = flipper_length_mm),
-             color = "black", size = 5, shape = 8) +
+             color = "red", size = 5, shape = 8) +
   labs(
     title = "Unknown Penguin Specimen Compared with Known Species",
     caption = "Figure 1. Scatterplot of bill length and flipper length by species.",
@@ -94,43 +107,49 @@ ggplot(penguins_clean, aes(x = bill_length_mm, y = flipper_length_mm, color = sp
   )
 ```
 
-# Classification Approach
-
-To estimate species membership, a multinomial logistic regression model was fitted using bill length and flipper length as predictors. The model calculates the probability that a specimen belongs to each species and assigns the species with the highest probability.
 
 
+# Analytical Approach
 
-```{r sim_classification_model, echo=FALSE}
+The unknown specimen was compared with known penguin measurements using both visual comparison and statistical classification techniques.
+
+
+```{r sim_classification_model, echo=FALSE, include=FALSE}
 model <- multinom(
   species ~ bill_length_mm + flipper_length_mm,
   data = penguins_clean
 )
 
 prediction <- predict(model, newdata = new_specimen)
+
 prediction
 
-probabilities <- predict(model, newdata = new_specimen, type = "probs")
-probabilities
 ```
 
 # Results
 
-The model assigned an 85% probability that the specimen is a Gentoo penguin, making Gentoo the most likely classification.
+The estimated probabilities for each species are shown in Table 2. The species with the highest probability is considered the most likely classification.
 
 ```{r result, echo=FALSE}
-probabilities <- predict(
-  model,
-  newdata = new_specimen,
-  type = "probs"
+probabilities <- predict(model, newdata = new_specimen, type = "probs")
+
+prob_table <- data.frame(
+  Species = names(probabilities),
+  Probability = round(as.numeric(probabilities) * 100, 1)
 )
 
-probabilities
+kable(
+  prob_table,
+  caption = "Estimated Probability of Species Membership"
+)
 
 ```
 
+The unknown specimen has a bill length of 45 mm and a flipper length of 220 mm. While its bill length falls between the Chinstrap and Gentoo averages, its flipper length is most consistent with Gentoo penguins, providing strong evidence for that classification.
+
 # Interpretation for Dr. Sharma
 
-Based on bill length and flipper length, the unknown specimen is most likely a Gentoo penguin. The strongest evidence is its long flipper length of 220 mm, which visually places it closest to the Gentoo cluster. The model’s predicted probability also supports this classification.
+Based on bill length and flipper length, the unknown specimen is most likely a Gentoo penguin. The strongest evidence is its long flipper length of 220 mm, which visually places it closest to the Gentoo cluster. Both the comparison table and scatterplot place the specimen closest to the Gentoo species. The statistical analysis further supports this conclusion by assigning the highest probability to Gentoo among the three candidate species.
 
 # Limitations
 
@@ -139,5 +158,3 @@ This classification is based only on two measurements: bill length and flipper l
 # Recommendation
 
 Based on both visual inspection and statistical classification, the specimen should be provisionally classified as a Gentoo penguin. The evidence supporting this classification is strong because the specimen's flipper length is highly characteristic of Gentoo penguins. If additional measurements such as body mass or bill depth become available, the classification should be re-evaluated to further increase confidence.
-
-# Appendix: Code
