@@ -56,6 +56,8 @@ The objective of this project is to identify the most likely species of an unlab
 
 The Palmer Penguins dataset contains measurements from three penguin species: Adelie, Chinstrap, and Gentoo. For this analysis, bill length and flipper length were used because these measurements were available for the unknown specimen. Records with missing values were removed prior to analysis.
 
+After removing records with missing values, the dataset contains N penguins across three species: X Adelie, Y Chinstrap, and Z Gentoo.
+
 # Exploratory Analysis
 
 Figure 1 shows the relationship between bill length and flipper length for the three species. Gentoo penguins generally have longer flippers than Adelie and Chinstrap penguins. The unknown specimen falls near the Gentoo cluster due to its unusually long flipper length of 220 mm.
@@ -65,7 +67,7 @@ penguins_clean <- penguins %>%
   drop_na(species, bill_length_mm, flipper_length_mm)
 ```
 
-```{r explore_data, echo=FALSE}
+```{r explore_data, echo=FALSE, fig.cap="Bill length vs. flipper length for known penguin species. The red star marks the unknown specimen (bill length = 45mm, flipper length = 220mm)."}
 
 species_summary <- penguins_clean %>%
   group_by(species) %>%
@@ -111,7 +113,7 @@ ggplot(penguins_clean, aes(x = bill_length_mm, y = flipper_length_mm, color = sp
 
 # Analytical Approach
 
-The unknown specimen was compared with known penguin measurements using both visual comparison and statistical classification techniques.
+Multinomial logistic regression was chosen because the outcome has three unordered categories (Adelie, Chinstrap, Gentoo) and the predictors are continuous. A simpler approach such as nearest-centroid distance was considered but rejected because it does not provide probability estimates or account for the spread within each species cluster.
 
 
 ```{r sim_classification_model, echo=FALSE, include=FALSE}
@@ -144,6 +146,8 @@ kable(
 )
 
 ```
+
+The model assigned an `r round(probabilities["Gentoo"]*100, 1)` probability to Gentoo, compared to `r round(probabilities["Chinstrap"]*100, 1)` for Chinstrap and `r round(probabilities["Adelie"]*100, 1)` for Adelie, making Gentoo the clear frontrunner
 
 The unknown specimen has a bill length of 45 mm and a flipper length of 220 mm. While its bill length falls between the Chinstrap and Gentoo averages, its flipper length is most consistent with Gentoo penguins, providing strong evidence for that classification.
 
