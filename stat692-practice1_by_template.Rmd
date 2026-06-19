@@ -1,0 +1,141 @@
+---
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+library(tidyverse)
+library(palmerpenguins)
+library(nnet)
+library(kableExtra)
+library(ggplot2)
+```
+
+\begin{center}
+
+\vspace*{3cm}
+
+{\Huge\bfseries The Penguin Identification Memo}
+
+\vspace{1cm}
+
+{\Large STAT 692-701 Statistical Consulting}
+
+\vspace{1cm}
+
+{\Large Tran Quoc Bao Dang}
+
+\vspace{1cm}
+
+{\large Submitted: `r Sys.Date()`}
+
+\vfill
+
+Texas A\&M University
+
+\end{center}
+
+\newpage
+
+
+
+# Part 1: Client-Facing Report / Memo
+
+**To:** Dr. Anya Sharma  
+**From:** Tran Quoc Bao Dang, Statistical Consultant  
+**Subject:** Analysis of the Unidentified Penguin Specimen
+
+## 1. Key Finding & Recommendation
+
+Based on the available measurements, the unidentified specimen is most likely a **Gentoo penguin**. The specimen's flipper length and bill length closely match the characteristics observed in known Gentoo penguins and differ from the typical measurements of Adelie and Chinstrap penguins. I recommend classifying the specimen as a Gentoo penguin based on the current evidence.
+
+## 2. Supporting Visualization
+
+```{r client-figure, fig.cap="Comparison of bill length and flipper length across penguin species with the unidentified specimen highlighted."}
+penguins_clean <- penguins |>
+  select(species, bill_length_mm, flipper_length_mm) |>
+  drop_na()
+
+unknown_penguin <- data.frame(
+  bill_length_mm = 50,
+  flipper_length_mm = 220
+)
+
+new_specimen <- tibble(
+  bill_length_mm = 45,
+  flipper_length_mm = 220
+)
+
+ggplot(penguins_clean,
+       aes(bill_length_mm, flipper_length_mm, color = species)) +
+  geom_point(alpha = 0.7) +
+  geom_point(data = new_specimen,
+             aes(bill_length_mm, flipper_length_mm),
+             inherit.aes = FALSE,
+             size = 4,
+             color = "red",
+             shape = 8) +
+  labs(
+    x = "Bill Length (mm)",
+    y = "Flipper Length (mm)",
+    color = "Species"
+  )
+```
+
+## 3. Summary of Analysis
+
+The recommendation was made by comparing the unidentified specimen's measurements to a dataset containing known Adelie, Chinstrap, and Gentoo penguins. The specimen falls within the range most commonly associated with Gentoo penguins, particularly because of its relatively long flipper length. Both visual inspection and quantitative classification methods consistently supported the same conclusion.
+
+\newpage
+
+# Part 2: Technical Appendix (For Instructor Review)
+
+## 2.1 Link to Reproducible Code
+
+Reproducible code is provided in:
+
+- `stat692-practice1.Rmd`
+- Palmer Penguins dataset
+- https://github.com/dtquocbao/penguin-species-classification-memo
+
+## 2.2 Analysis Justification
+
+| **Question** | **My Justification** |
+|----------|-------------------|
+| Statistical Method Used | Multinomial Logistic Regression |
+| Justification for Method | The response variable (species) contains three categories. The objective is to classify an unidentified penguin using continuous predictor variables. |
+| Assumptions Checked | Missing observations were removed prior to analysis. Scatter plots were reviewed for unusual observations and species separation. Bill length and flipper length were measured on continuous scales and were appropriate predictors for a multinomial logistic regression model. |
+
+### Technical Results
+
+```{r technical-analysis}
+penguins_model <- penguins %>%
+  drop_na(species, bill_length_mm, flipper_length_mm)
+
+model <- multinom(
+  species ~ bill_length_mm + flipper_length_mm,
+  data = penguins_model,
+  trace = FALSE
+)
+
+probabilities <- predict(model, newdata = new_specimen, type = "probs")
+
+prob_table <- data.frame(
+  Species = names(probabilities),
+  Probability = round(as.numeric(probabilities) * 100, 2)
+)
+
+kable(
+  prob_table,
+  caption = "Predicted Probabilities for the Unknown Specimen"
+)
+
+```
+
+### Additional Notes
+
+The classification model was used to estimate the probability that the unknown specimen belongs to each species category. Results from the model were consistent with the visual evidence presented in the client-facing memo.
+
+## 2.3 Personal Reflection
+
+The most challenging aspect of this project was translating technical statistical results into language that would be meaningful to a non-technical client. While fitting the multinomial logistic regression model was straightforward, deciding what information to include in the client memo required careful judgment. This project reinforced the importance of separating technical analysis from client communication and strengthened my ability to present statistical findings in a concise and actionable manner.

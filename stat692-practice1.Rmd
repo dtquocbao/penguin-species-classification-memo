@@ -37,15 +37,16 @@ library(tidyverse)
 library(nnet)
 library(knitr)
 library(kableExtra)
+library(ggplot2)
 
 data("penguins")
 ```
 
-# Executive Summary
+# 1. Executive Summary
 
 Dr. Sharma provided measurements from an unidentified penguin specimen with a bill length of 45 mm and a flipper length of 220 mm. Using the Palmer Penguins dataset, I compared these measurements to known Adelie, Chinstrap, and Gentoo penguins. Both visual comparison and statistical analysis suggest that the specimen is most likely a Gentoo penguin. The specimen's flipper length is particularly characteristic of Gentoo penguins. While the classification appears strong, confidence could be improved with additional measurements such as body mass or bill depth.
 
-# Background and Objective
+# 2. Background and Objective
 
 The objective of this project is to identify the most likely species of an unlabeled penguin specimen discovered during a previous expedition. The available measurements are bill length (45 mm) and flipper length (220 mm). Dr. Sharma would like to determine:
 
@@ -53,7 +54,7 @@ The objective of this project is to identify the most likely species of an unlab
 2. The confidence in that classification.
 3. How the specimen compares visually to known penguin species.
 
-# Data Description
+# 3. Data Description
 
 The Palmer Penguins dataset contains measurements from three penguin species: Adelie, Chinstrap, and Gentoo. For this analysis, bill length and flipper length were used because these measurements were available for the unidentified specimen. Records with missing values were removed prior to analysis.
 
@@ -74,7 +75,7 @@ total_n <- nrow(penguins_clean)
 
 After removing records with missing values, the dataset contains `r total_n` penguins across three species: `r adelie_n` Adelie, `r chinstrap_n` Chinstrap, and `r gentoo_n` Gentoo.
 
-# Exploratory Analysis
+# 4. Exploratory Analysis
 
 Figure 1 shows the relationship between bill length and flipper length for the three species. Gentoo penguins generally have longer flippers than Adelie and Chinstrap penguins. The unidentified specimen falls near the Gentoo cluster due to its unusually long flipper length of 220 mm.
 
@@ -120,7 +121,7 @@ ggplot(penguins_clean, aes(x = bill_length_mm, y = flipper_length_mm, color = sp
 
 
 
-# Analytical Approach
+# 5. Analytical Approach
 
 The unidentified specimen was compared to known penguin measurements using a statistical To estimate the most likely species, we used a statistical model that learns the typical bill and flipper length patterns for each species from the existing dataset, then calculates the probability that the unidentified specimen belongs to each group. This approach was chosen because it provides a concrete confidence score rather than simply pointing to the nearest average.
 
@@ -137,7 +138,7 @@ prediction
 
 ```
 
-# Results
+# 6. Results
 
 The estimated probabilities for each species are shown in Table 2. Gentoo received the highest probability and was therefore identified as the most likely species. This result is consistent with the visual evidence presented in Figure 1 and the comparison shown in Table 1.
 
@@ -161,10 +162,10 @@ The model assigned a `r round(probabilities["Gentoo"]*100, 2)`% probability to G
 The unidentified specimen has a bill length of 45 mm and a flipper length of 220 mm. While its bill length falls between the Chinstrap and Gentoo averages, its flipper length is most consistent with Gentoo penguins, providing strong evidence for that classification.
 
 
-# Limitations
+# 7. Limitations
 
 This classification is based only on two measurements: bill length and flipper length. Including body mass, bill depth, sex, island, or other biological information could improve confidence. Because the specimen is preserved and from a prior expedition, measurement error or preservation effects may also affect the result.
 
-# Recommendation
+# 8. Recommendation
 
 Based on both visual inspection and statistical classification, the specimen should be classified as a Gentoo penguin based on the available evidence. The evidence supporting this classification is strong because the specimen's flipper length is highly characteristic of Gentoo penguins. If additional measurements such as body mass or bill depth become available, the classification should be re-evaluated to further increase confidence.
